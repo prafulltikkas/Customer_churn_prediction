@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Customer Churn Prediction</h1>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Customer Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <form action="/predict" method="POST">
+                            <div class="mb-3">
+                                <label for="total_logins" class="form-label">Total Logins</label>
+                                <input type="number" class="form-control" id="total_logins" name="total_logins" 
+                                    value="{{ form_data.total_logins if form_data }}" required step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="tickets_raised" class="form-label">Tickets Raised</label>
+                                <input type="number" class="form-control" id="tickets_raised" name="tickets_raised" 
+                                    value="{{ form_data.tickets_raised if form_data }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="customer_tenure" class="form-label">Customer Tenure (Years)</label>
+                                <input type="number" class="form-control" id="customer_tenure" name="customer_tenure" 
+                                    value="{{ form_data.customer_tenure if form_data }}" required step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="sentiment_score" class="form-label">Sentiment Score (0-1)</label>
+                                <input type="number" class="form-control" id="sentiment_score" name="sentiment_score" 
+                                    value="{{ form_data.sentiment_score if form_data }}" required step="0.000001" min="0" max="1">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="onboarding_year" class="form-label">Onboarding Year</label>
+                                <input type="number" class="form-control" id="onboarding_year" name="onboarding_year" 
+                                    value="{{ form_data.onboarding_year if form_data }}" required min="2000" max="2023">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="loans_accessed" class="form-label">Loans Accessed</label>
+                                <input type="number" class="form-control" id="loans_accessed" name="loans_accessed" 
+                                    value="{{ form_data.loans_accessed if form_data }}" required step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="loans_taken" class="form-label">Loans Taken</label>
+                                <input type="number" class="form-control" id="loans_taken" name="loans_taken" 
+                                    value="{{ form_data.loans_taken if form_data }}" required step="0.01">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="monthly_avg_balance" class="form-label">Monthly Average Balance</label>
+                                <input type="number" class="form-control" id="monthly_avg_balance" name="monthly_avg_balance" 
+                                    value="{{ form_data.monthly_avg_balance if form_data }}" required step="0.01">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Predict Churn Risk</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                {% if prediction %}
+                <div class="card">
+                    <div class="card-header bg-{{ prediction.risk_color }} text-white">
+                        <h3>Prediction Result</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <h4 class="card-title">This customer <span class="text-{{ prediction.risk_color }}">{{ prediction.prediction }}</span></h4>
+                            <div class="risk-level mb-3">
+                                <span class="badge bg-{{ prediction.risk_color }}">{{ prediction.risk_level }}</span>
+                            </div>
+                            
+                            <div class="progress mb-4" style="height: 30px;">
+                                <div class="progress-bar bg-{{ prediction.risk_color }}" role="progressbar" 
+                                    style="width: {{ prediction.probability }}%;" 
+                                    aria-valuenow="{{ prediction.probability }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ prediction.probability }}% Probability of Churn
+                                </div>
+                            </div>
+                            
+                            <div class="risk-meter">
+                                <div class="risk-labels d-flex justify-content-between mb-1">
+                                    <span>Low Risk</span>
+                                    <span>Medium Risk</span>
+                                    <span>High Risk</span>
+                                </div>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 30%"></div>
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 40%"></div>
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 30%"></div>
+                                </div>
+                                <div class="needle" style="left: {{ prediction.probability }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% elif error %}
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Error</h4>
+                    <p>{{ error }}</p>
+                </div>
+                {% else %}
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h3>Prediction Result</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center">Please fill out the form to get a churn prediction.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
